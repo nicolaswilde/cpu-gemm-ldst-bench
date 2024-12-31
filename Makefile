@@ -7,22 +7,59 @@ CPU_CORES ?= 240
 CORE_LIST = $(shell seq 0 $(shell expr $(CPU_CORES) - 1))
 FREQ ?= 2300000 # 2.3 GHz
 
-# how many cores to test
-CORES_M ?= 4
-CORES_N ?= 4
+# CACHELINE: cache line size
+CACHELINE ?= 64
 
-# the cpu core id that openmp multi-threads cpu set start from
-CORE_START ?= 0
-
-# tiling parameters
-TM ?= 512
+# TM, TN, TK: tile size
+TM ?= 1024
 TN ?= 512
 TK ?= 512
 
+# SINGLE_CORE, MULTI_CORE: test single core or multi-core performance
+#     10: single core
+#     01: multi-core
+SINGLE_CORE ?= 0
+MULTI_CORE ?= 0
+
+# default to multi-core mode
+ifeq ($(SINGLE_CORE), 0)
+ifeq ($(MULTI_CORE), 0)
+MULTI_CORE = 1
+endif
+endif
+
+# CORES_M, CORES_N:
+#     number of tested cores in M and N dimension under MULTI_CORE mode
+CORES_M ?= 4
+CORES_N ?= 4
+
+# CORE_START, CORE_STRIDE:
+#     start and stride of tested core id under MULTI_CORE mode
+#     set CORE_STRIDE = 2 if core 0 and core 1 are the same phisical core
+CORE_START ?= 0
+CORE_STRIDE ?= 1
+
+# LOAD_C, LOAD_AB, STORE_C:
+#     111: C = A * B + C
+#     011: C = A * B
+#     010: A * B main loop
+LOAD_C ?= 1
+LOAD_AB ?= 1
+STORE_C ?= 1
+
+# APAD, BPAD, CPAD: padding elements for A, B, C
+APAD ?= 64
+BPAD ?= 64
+CPAD ?= 16
+
 CFLAG = -Ofast -march=native -fno-strict-aliasing -fopenmp \
-        -DCORES_M=$(CORES_M) -DCORES_N=$(CORES_N) \
-		-DCORE_START=$(CORE_START) \
-		-DTM=$(TM) -DTN=$(TN) -DTK=$(TK)
+        -DCACHELINE=$(CACHELINE) \
+		-DTM=$(TM) -DTN=$(TN) -DTK=$(TK) \
+		-DSINGLE_CORE=$(SINGLE_CORE) -DMULTI_CORE=$(MULTI_CORE) \
+		-DCORES_M=$(CORES_M) -DCORES_N=$(CORES_N) \
+		-DCORE_START=$(CORE_START) -DCORE_STRIDE=$(CORE_STRIDE) \
+		-DLOAD_C=$(LOAD_C) -DLOAD_AB=$(LOAD_AB) -DSTORE_C=$(STORE_C) \
+		-DAPAD=$(APAD) -DBPAD=$(BPAD) -DCPAD=$(CPAD)
 
 BIN = amx-gemm
 CFILES = amx-gemm.c
