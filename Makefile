@@ -47,10 +47,16 @@ LOAD_C ?= 1
 LOAD_AB ?= 1
 STORE_C ?= 1
 
+# FLUSH_CACHE: flush cache before each kernel execution
+FLUSH_CACHE ?= 1
+
+# FLUSH_CACHE_SIZE: default 1 GB
+FLUSH_CACHE_SIZE ?= 1024*1024*1024
+
 # APAD, BPAD, CPAD: padding elements for A, B, C
-APAD ?= 64
-BPAD ?= 64
-CPAD ?= 16
+APAD ?= 0
+BPAD ?= 0
+CPAD ?= 0
 
 CFLAG = -Ofast -march=native -fno-strict-aliasing -fopenmp \
         -DCACHELINE=$(CACHELINE) \
@@ -59,6 +65,7 @@ CFLAG = -Ofast -march=native -fno-strict-aliasing -fopenmp \
 		-DCORES_M=$(CORES_M) -DCORES_N=$(CORES_N) \
 		-DCORE_START=$(CORE_START) -DCORE_STRIDE=$(CORE_STRIDE) \
 		-DLOAD_C=$(LOAD_C) -DLOAD_AB=$(LOAD_AB) -DSTORE_C=$(STORE_C) \
+		-DFLUSH_CACHE=$(FLUSH_CACHE) -DFLUSH_CACHE_SIZE=$(FLUSH_CACHE_SIZE) \
 		-DAPAD=$(APAD) -DBPAD=$(BPAD) -DCPAD=$(CPAD)
 
 BIN = amx-gemm

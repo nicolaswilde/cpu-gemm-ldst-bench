@@ -233,28 +233,41 @@ void test_performance(
     memset(B, 1, N * ldb * sizeof(int8_t));
     memset(C, 1, M * ldc * sizeof(int32_t));
 
-    // warm up
-    int32_t result = amx_gemm_i8i8i32(A, B, C, M, N, K, lda, ldb, ldc);
+    int8_t *flush_cache = (int8_t *)malloc(FLUSH_CACHE_SIZE);
+    int32_t result = 0; // amx_gemm_i8i8i32(A, B, C, M, N, K, lda, ldb, ldc);
 
-    struct timespec start_time, end_time;
-    clock_gettime(CLOCK_MONOTONIC, &start_time);
-    for (uint32_t i = 0; i < num_repeats; i++)
+    double elapsed_time = 0;
+    for (uint32_t i = 0; i < num_repeats; i++) {
+        if (FLUSH_CACHE) {
+            if (SINGLE_CORE) {
+                memset(flush_cache, 1, FLUSH_CACHE_SIZE);
+            } else if (MULTI_CORE) {
+                #pragma omp parallel for num_threads(CORES)
+                for (int j = 0; j < CORES; j++) {
+                    memset(&flush_cache[j * FLUSH_CACHE_SIZE / CORES], 1,
+                           FLUSH_CACHE_SIZE / CORES);
+                }
+            }
+        }
+        struct timespec start_time, end_time;
+        clock_gettime(CLOCK_MONOTONIC, &start_time);
         result += amx_gemm_i8i8i32(A, B, C, M, N, K, lda, ldb, ldc);
-    clock_gettime(CLOCK_MONOTONIC, &end_time);
+        clock_gettime(CLOCK_MONOTONIC, &end_time);
+
+        uint64_t nanoseconds = (end_time.tv_sec - start_time.tv_sec) * 1e9 +
+                               (end_time.tv_nsec - start_time.tv_nsec);
+        elapsed_time += (double)nanoseconds / 1e9;
+    }
 
     uint64_t mac_count = (uint64_t)M * N * K * num_repeats;
     uint64_t ideal_mac_per_cycle = 1024;
-
-    uint64_t nanoseconds = (end_time.tv_sec - start_time.tv_sec) * 1e9 +
-                           (end_time.tv_nsec - start_time.tv_nsec);
-    double elapsed_time = (double)nanoseconds / 1e9;
 
     double TOPS = (double)mac_count * 2 / 1e12 / elapsed_time;
 
     printf("M N K = %5d %5d %5d, Elapsed time = %10.6f s, Result = %08x, "
            "Performance = %6.2f TOPS\n", M, N, K, elapsed_time, result, TOPS);
 
-    free(_A); free(_B); free(_C);
+    free(_A); free(_B); free(_C); free(flush_cache);
 }
 
 int main() {
@@ -274,7 +287,12 @@ int main() {
     printf("TM TN TK = %d %d %d, ", TM, TN, TK);
     printf("LOAD_C = %d, LOAD_AB = %d, STORE_C = %d, ",
             LOAD_C, LOAD_AB, STORE_C);
-    printf("A/B/C PAD = %d %d %d\n", APAD, BPAD, CPAD);
+    printf("A/B/C PAD = %d %d %d, ", APAD, BPAD, CPAD);
+    if (FLUSH_CACHE) {
+        printf("Flush Cache %d MB\n", FLUSH_CACHE_SIZE / 1024 / 1024);
+    } else {
+        printf("No Cache Flush\n");
+    }
 
     size_t mem_align = 4096;
     const int num_repeats = 10;
@@ -290,12 +308,12 @@ int main() {
     }
 
     // test performance
-    for (int mn = 256; mn <= 16384; mn *= 2) {
-        for (int k = 256; k <= 16384; k *= 2) {
-            test_performance(mn, mn, k, k + APAD, k + BPAD, mn + CPAD,
-                             mem_align, num_repeats);
-            fflush(stdout);
-        }
+    for (int k = 128; k <= 32768; k += 128) {
+        int m = TM * CORES_M;
+        int n = TN * CORES_N;
+        test_performance(m, n, k, k + APAD, k + BPAD, n + CPAD,
+                         mem_align, num_repeats);
+        fflush(stdout);
     }
 
     return 0;

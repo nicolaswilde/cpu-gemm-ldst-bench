@@ -84,17 +84,27 @@
 #define STORE_C 1
 #endif
 
+// FLUSH_CACHE: flush cache before each kernel execution
+#ifndef FLUSH_CACHE
+#define FLUSH_CACHE 1
+#endif
+
+// FLUSH_CACHE_SIZE: default 1 GB
+#ifndef FLUSH_CACHE_SIZE
+#define FLUSH_CACHE_SIZE (1024 * 1024 * 1024)
+#endif
+
 // APAD, BPAD, CPAD: padding elements for A, B, C
 #ifndef APAD
-#define APAD 64
+#define APAD 0
 #endif
 
 #ifndef BPAD
-#define BPAD 64
+#define BPAD 0
 #endif
 
 #ifndef CPAD
-#define CPAD 16
+#define CPAD 0
 #endif
 
 void bind_thread_to_cpu(int cpu_id);
