@@ -308,16 +308,9 @@ int main() {
     }
 
     // test performance
-    for (int k = 256; k <= 16384; k += 256) {
-        int m = SINGLE_CORE ? TM : CORES_M * TM;
-        int n = SINGLE_CORE ? TN : CORES_N * TN;
-        test_performance(m, n, k, k + APAD, k + BPAD, n + CPAD,
-                         mem_align, num_repeats);
-        fflush(stdout);
-    }
-    for (int k = 256; k <= 16384; k += 256) {
-        int m = SINGLE_CORE ? TM * 2 : CORES_M * TM * 2;
-        int n = SINGLE_CORE ? TN * 2 : CORES_N * TN * 2;
+    for (int k = TEST_K_STRIDE; k <= TEST_K_MAX; k += TEST_K_STRIDE) {
+        int m = TEST_M;
+        int n = TEST_N;
         test_performance(m, n, k, k + APAD, k + BPAD, n + CPAD,
                          mem_align, num_repeats);
         fflush(stdout);

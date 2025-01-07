@@ -32,6 +32,23 @@
 #define TK 512
 #endif
 
+// TEST_M, TEST_N, TEST_K_MAX, TEST_K_STRIDE: test matrix size
+#ifndef TEST_M
+#define TEST_M 4096
+#endif
+
+#ifndef TEST_N
+#define TEST_N 4096
+#endif
+
+#ifndef TEST_K_MAX
+#define TEST_K_MAX 16384
+#endif
+
+#ifndef TEST_K_STRIDE
+#define TEST_K_STRIDE 256
+#endif
+
 // SINGLE_CORE, MULTI_CORE: test single core or multi-core performance
 //     10: single core
 //     01: multi-core

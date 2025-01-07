@@ -15,6 +15,12 @@ TM ?= 1024
 TN ?= 512
 TK ?= 512
 
+# TEST_M, TEST_N, TEST_K_MAX, TEST_K_STRIDE: test matrix size
+TEST_M ?= 4096
+TEST_N ?= 4096
+TEST_K_MAX ?= 16384
+TEST_K_STRIDE ?= 256
+
 # SINGLE_CORE, MULTI_CORE: test single core or multi-core performance
 #     10: single core
 #     01: multi-core
@@ -61,6 +67,8 @@ CPAD ?= 0
 CFLAG = -Ofast -march=native -fno-strict-aliasing -fopenmp \
         -DCACHELINE=$(CACHELINE) \
 		-DTM=$(TM) -DTN=$(TN) -DTK=$(TK) \
+		-DTEST_M=$(TEST_M) -DTEST_N=$(TEST_N) \
+		-DTEST_K_MAX=$(TEST_K_MAX) -DTEST_K_STRIDE=$(TEST_K_STRIDE) \
 		-DSINGLE_CORE=$(SINGLE_CORE) -DMULTI_CORE=$(MULTI_CORE) \
 		-DCORES_M=$(CORES_M) -DCORES_N=$(CORES_N) \
 		-DCORE_START=$(CORE_START) -DCORE_STRIDE=$(CORE_STRIDE) \
