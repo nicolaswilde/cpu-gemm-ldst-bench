@@ -50,8 +50,8 @@ STORE_C ?= 1
 # FLUSH_CACHE: flush cache before each kernel execution
 FLUSH_CACHE ?= 1
 
-# FLUSH_CACHE_SIZE: default 1 GB
-FLUSH_CACHE_SIZE ?= 1024*1024*1024
+# FLUSH_CACHE_SIZE: default 300 MB
+FLUSH_CACHE_SIZE ?= 300*1024*1024
 
 # APAD, BPAD, CPAD: padding elements for A, B, C
 APAD ?= 0

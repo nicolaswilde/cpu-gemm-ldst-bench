@@ -89,9 +89,9 @@
 #define FLUSH_CACHE 1
 #endif
 
-// FLUSH_CACHE_SIZE: default 1 GB
+// FLUSH_CACHE_SIZE: default 300 MB
 #ifndef FLUSH_CACHE_SIZE
-#define FLUSH_CACHE_SIZE (1024 * 1024 * 1024)
+#define FLUSH_CACHE_SIZE (300 * 1024 * 1024)
 #endif
 
 // APAD, BPAD, CPAD: padding elements for A, B, C
