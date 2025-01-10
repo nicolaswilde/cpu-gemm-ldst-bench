@@ -303,7 +303,7 @@ int main() {
         const int K_align = CACHELINE / sizeof(int8_t);
         int M = rand() % 2048;
         int N = rand() % 2048;
-        int K = (rand() % 2048 + K_align - 1) / K_align * K_align;
+        int K = (rand() % 2048 + K_align) / K_align * K_align;
         test_correctness(M, N, K, K + APAD, K + BPAD, N + CPAD, mem_align);
     }
 
